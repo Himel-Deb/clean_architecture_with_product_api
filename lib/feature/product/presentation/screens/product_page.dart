@@ -10,15 +10,13 @@ class ProductPage extends GetView<ProductController> {
   const ProductPage({super.key});
 
   void openCreateDialog() {
-    Get.dialog(
-      const ProductFormDialog(),
-    );
+    Get.dialog(const ProductFormDialog());
   }
 
   void openEditDialog(product) {
     Get.dialog(
-       ProductFormDialog(
-      ),
+      //problem : is this method default in getx
+      ProductFormDialog(),
     );
   }
 
@@ -26,19 +24,15 @@ class ProductPage extends GetView<ProductController> {
     final product = await controller.fetchProductById(id);
     if (product == null) return;
 
-    Get.to(
-      () => ProductDetailsPage(
-        product: product,
-      ),
-    );
+    Get.to(() => ProductDetailsPage(product: product));
   }
 
   void confirmDelete(String id) {
     Get.defaultDialog(
+      //problem : is this method default in getx
       title: 'Delete Product',
 
-      middleText:
-          'Are you sure you want to delete this product?',
+      middleText: 'Are you sure you want to delete this product?',
 
       textCancel: 'Cancel',
 
@@ -78,21 +72,16 @@ class ProductPage extends GetView<ProductController> {
       ),
 
       body: Obx(() {
-
         if (controller.isLoading.value) {
-          return const Center(
-            child: CircularProgressIndicator(),
-          );
+          return const Center(child: CircularProgressIndicator());
         }
 
-        if (controller.errorMessage.isNotEmpty &&
-            controller.products.isEmpty) {
+        if (controller.errorMessage.isNotEmpty && controller.products.isEmpty) {
           return Center(
             child: Column(
               mainAxisSize: MainAxisSize.min,
 
               children: [
-
                 Text(controller.errorMessage.value),
 
                 const SizedBox(height: 12),
@@ -110,64 +99,103 @@ class ProductPage extends GetView<ProductController> {
         }
 
         if (controller.products.isEmpty) {
-          return const Center(
-            child: Text('No products available'),
-          );
+          return const Center(child: Text('No products available'));
         }
+
+
 
         return RefreshIndicator(
           onRefresh: () {
             return controller.fetchProducts(refresh: true);
           },
 
-          child: ListView.builder(
-            physics: const AlwaysScrollableScrollPhysics(),
+          child: Column(
+            children: [
+              Padding(
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 16,
+                  vertical: 8,
+                ),
+                child: TextField(
+                  controller: controller.searchController,
 
-            itemCount: controller.products.length + 1,
+                  onChanged: (value) {
+                    controller.searchProducts(value);
+                  },
 
-            itemBuilder: (context, index) {
+                  decoration: InputDecoration(
+                    labelText: "Search a Product",
+                    prefixIcon: const Icon(Icons.search),
 
-              if (index == controller.products.length) {
-
-                if (!controller.hasMore) {
-                  return const SizedBox(height: 80);
-                }
-
-                return Padding(
-                  padding: const EdgeInsets.all(16),
-
-                  child: Center(
-                    child: ElevatedButton(
-                      onPressed: controller.isLoadingMore.value
-                          ? null
-                          : controller.loadMoreProducts,
-
-                      child: controller.isLoadingMore.value
-                          ? const CircularProgressIndicator()
-                          : const Text('Load More'),
+                    suffixIcon: IconButton(
+                      onPressed: () {
+                        controller.searchController.clear();
+                        controller.searchProducts('');
+                      },
+                      icon: const Icon(Icons.clear),
                     ),
+
+                    border: const OutlineInputBorder(),
                   ),
-                );
-              }
+                ),
+              ),
 
-              final product = controller.products[index];
+              Expanded(
+                child: ListView.builder(
+                  physics: const AlwaysScrollableScrollPhysics(),
 
-              return ProductCard(
-                product: product,
+                  itemCount:
+                      controller.filteredProducts.length +
+                      (controller.hasMore && controller.searchQuery.isEmpty
+                          ? 1
+                          : 0),
 
-                onDetails: () {
-                  openDetails(product.id);
-                },
+                  itemBuilder: (context, index) {
+                    if (index == controller.filteredProducts.length &&
+                        controller.searchQuery.isEmpty) {
+                      if (!controller.hasMore) {
+                        // problem : don't understand hasMore concept
+                        return const SizedBox(height: 80);
+                      }
 
-                onEdit: () {
-                  openEditDialog(product);
-                },
+                      return Padding(
+                        padding: const EdgeInsets.all(16),
 
-                onDelete: () {
-                  confirmDelete(product.id);
-                },
-              );
-            },
+                        child: Center(
+                          child: ElevatedButton(
+                            onPressed: controller.isLoadingMore.value
+                                ? null
+                                : controller.loadMoreProducts,
+
+                            child: controller.isLoadingMore.value
+                                ? const CircularProgressIndicator()
+                                : const Text('Load More'),
+                          ),
+                        ),
+                      );
+                    }
+
+                    final product = controller.filteredProducts[index];
+
+                    return ProductCard(
+                      product: product,
+
+                      onDetails: () {
+                        openDetails(product.id);
+                      },
+
+                      onEdit: () {
+                        openEditDialog(product);
+                      },
+
+                      onDelete: () {
+                        confirmDelete(product.id);
+                      },
+                    );
+                  },
+                ),
+              ),
+            ],
           ),
         );
       }),

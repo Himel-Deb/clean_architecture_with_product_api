@@ -1,3 +1,4 @@
+import 'package:flutter/widgets.dart';
 import 'package:get/get.dart';
 import 'package:products_crud/feature/product/domain/usecase/create_product.dart';
 import 'package:products_crud/feature/product/domain/usecase/delete_product.dart';
@@ -35,6 +36,14 @@ class ProductController extends GetxController {
 
   final RxString errorMessage = ''.obs;
 
+  final TextEditingController searchController =
+    TextEditingController();
+
+  // Search
+  final RxString searchQuery = ''.obs;
+  final RxList<Product> filteredProducts = <Product>[].obs;
+
+
   final Rxn<Product> selectedProduct = Rxn<Product>();
 
   // Pagination
@@ -62,7 +71,7 @@ class ProductController extends GetxController {
     if (isLoading.value) return;
 
     if (refresh) {
-      currentPage = 1;
+      currentPage = 1;    // problem : why we use currentPage
     }
 
     try {
@@ -76,6 +85,7 @@ class ProductController extends GetxController {
       );
 
       products.assignAll(result.products);
+      searchProducts(searchQuery.value);
 
       currentPage = result.page;
 
@@ -88,6 +98,26 @@ class ProductController extends GetxController {
       isLoading.value = false;
     }
   }
+
+
+  // SEARCH PRODUCTS
+
+void searchProducts(String query) {
+  searchQuery.value = query;
+
+  if (query.trim().isEmpty) {
+    filteredProducts.assignAll(products);
+    return;
+  }
+
+  filteredProducts.assignAll(
+    products.where((product) {
+      return product.name
+          .toLowerCase()
+          .contains(query.trim().toLowerCase());
+    }).toList(),
+  );
+}
 
   // LOAD MORE
 
@@ -109,6 +139,7 @@ class ProductController extends GetxController {
       );
 
       products.addAll(result.products);
+      searchProducts(searchQuery.value);
 
       currentPage = result.page;
 
@@ -225,4 +256,6 @@ class ProductController extends GetxController {
       Get.snackbar('Error', e.toString());
     }
   }
+
+
 }

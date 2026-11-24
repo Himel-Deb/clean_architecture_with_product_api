@@ -103,7 +103,7 @@ class ProductFormDialog extends GetView<ProductFormController> {
               // Error message
               Obx(() {
                 if (controller.errorMessage.value.isEmpty) {
-                  return const SizedBox.shrink();
+                  return const SizedBox.shrink();               // can't understand sizedBox.shrink
                 }
 
                 return Text(
@@ -126,7 +126,7 @@ class ProductFormDialog extends GetView<ProductFormController> {
 
         Obx(() {
           return ElevatedButton(
-            onPressed: controller.isSubmitting.value
+            onPressed: controller.isSubmitting.value  // explain this logic 
                 ? null
                 : controller.submit,
             child: controller.isSubmitting.value

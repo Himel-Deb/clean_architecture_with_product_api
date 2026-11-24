@@ -54,7 +54,7 @@ class ProductFormController extends GetxController {
 
       if (image == null) return;
 
-      final extension = image.path.split('.').last.toLowerCase();
+      final extension = image.path.split('.').last.toLowerCase();  // problem : why we use .last ;
 
       const allowedExtensions = [
         'jpg',
@@ -124,7 +124,7 @@ class ProductFormController extends GetxController {
 
   // Submit form
   Future<void> submit() async {
-    if (!(formKey.currentState?.validate() ?? false)) {
+    if (!(formKey.currentState?.validate() ?? false)) {    // problem : can not proper understand this line
       return;
     }
 
