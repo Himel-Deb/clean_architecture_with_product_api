@@ -8,4 +8,16 @@ class ApiConstants {
   static const String products = '/products';
 
   static const int imageMaxSize = 2 * 1024 * 1024;
+
+  String getProductImageUrl(String imagePath) {
+  if (imagePath.startsWith('http://') ||
+      imagePath.startsWith('https://')) {
+    return imagePath;
+  }
+
+  return Uri.parse(
+    ApiConstants.imageBaseUrl,
+  ).resolve(imagePath).toString();
+}
+
 }
